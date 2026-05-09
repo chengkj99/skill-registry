@@ -28,11 +28,11 @@
     "registry",
     "audit"
   ],
-  "author": "geekjourneyx",
+  "author": "chengkj99",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/geekjourneyx/skill-registry.git"
+    "url": "git+https://github.com/chengkj99/skill-registry.git"
   },
   "publishConfig": {
     "access": "public"
