@@ -8,7 +8,7 @@
     ".": "./src/index.js"
   },
   "bin": {
-    "skill-registry": "./bin/skill-registry.mjs"
+    "skill-registry": "bin/skill-registry.mjs"
   },
   "files": [
     "bin",
