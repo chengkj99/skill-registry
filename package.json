@@ -34,6 +34,9 @@
     "type": "git",
     "url": "git+https://github.com/geekjourneyx/skill-registry.git"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=18.0.0"
   },
