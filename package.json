@@ -1,0 +1,43 @@
+{
+  "name": "skill-registry",
+  "version": "1.0.0",
+  "description": "Scan, classify, and report on Claude Code skills — CLI and programmatic API",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "bin": {
+    "skill-registry": "./bin/skill-registry.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "skills"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "skills",
+    "cli",
+    "registry",
+    "audit"
+  ],
+  "author": "geekjourneyx",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/geekjourneyx/skill-registry.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "vitest": "^3.0.0"
+  }
+}
