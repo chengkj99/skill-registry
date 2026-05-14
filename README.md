@@ -6,8 +6,9 @@ Scan, classify, and detect conflicts in your Claude Code skills — from CLI or 
 
 - **Scans** all installed skills from global `~/.claude/skills/`, project `.claude/skills/`, and plugin cache
 - **Classifies** each skill by source: 官方插件 / 社区插件 / 三方(agents) / 自建 / 项目 / 团队
+- **全局来源推断**：同时用 skill **目录名**与 `SKILL.md` frontmatter 中的 **`name`** 去匹配插件注册表；`~/.claude/skills/` 下指向 `~/.claude/plugins/cache/` 的软链会按对应安装目录的 `plugin.json` 判定官方或社区。
 - **Detects** naming conflicts and reports which skill takes priority
-- **Outputs** colored tree view (default), Markdown, or JSON
+- **Outputs** colored tree view (default), Markdown, or JSON；树形模式下每行附带灰色 **[作用域 · 插件名]** 提示（无插件则仅作用域）。
 
 ## Install
 

@@ -2,6 +2,19 @@ import { relative } from 'node:path'
 import { SOURCE_ORDER, SOURCE_COLORS, RESET, BOLD, DIM, RED, YELLOW, GRAY } from './constants.js'
 
 /**
+ * 树形行内灰色元信息：作用域 + 可选插件名（控制宽度）
+ */
+function formatTreeSkillMeta(s, c) {
+  let inner = s.scope
+  if (s.plugin) {
+    let p = String(s.plugin)
+    if (p.length > 14) p = `${p.slice(0, 13)}…`
+    inner += ` · ${p}`
+  }
+  return `${c.dim}[${inner}]${c.reset} `
+}
+
+/**
  * 获取来源的基础类别：'社区(omc)' → '社区'，其他原样返回
  */
 function baseSource(source) {
@@ -204,7 +217,7 @@ export function generateTreeReport(skills, conflicts, homeDir, projectRoot, opti
       const prefix = isLast ? '└──' : '├──'
       const desc = s.description.length > 50 ? s.description.slice(0, 47) + '...' : s.description
       const linkMark = s.isSymlink ? ` ${c.yellow}→${c.reset}` : ''
-      lines.push(`  ${c.dim}${prefix}${c.reset} ${c.bold}${s.name}${c.reset}${linkMark}  ${c.gray}${desc}${c.reset}`)
+      lines.push(`  ${c.dim}${prefix}${c.reset} ${formatTreeSkillMeta(s, c)}${c.bold}${s.name}${c.reset}${linkMark}  ${c.gray}${desc}${c.reset}`)
     }
     lines.push('')
   }

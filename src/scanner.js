@@ -39,24 +39,36 @@ function classifyCachePath(skillPath, paths, fs) {
 
 /**
  * 推断 skill 来源（4 类：官方 / 社区 / 自建 / 其他）
+ * @param {object} [lookup] - 目录扫描侧提供的补充键（避免仅用 basename 漏匹配 registry）
+ * @param {string} [lookup.entryName] - skills 目录下条目名（文件夹名），默认取 skillPath 的 basename
+ * @param {string} [lookup.fmName] - SKILL.md frontmatter 中的 name，可选
  */
-export function inferSource(skillPath, isSymlink, symlinkTarget, pluginRegistry, paths, fs) {
+export function inferSource(skillPath, isSymlink, symlinkTarget, pluginRegistry, paths, fs, lookup = {}) {
+  const entryName = lookup.entryName ?? basename(skillPath)
+  const fmName = (lookup.fmName || '').trim()
+
   // 1. 软链指向 .agents/skills → 社区(agents)
   if (isSymlink && symlinkTarget && symlinkTarget.includes('.agents/skills')) return '社区(agents)'
 
   // 2. 项目目录下 → 自建
   if (skillPath.startsWith(paths.projectSkillsDir)) return '自建'
 
-  // 3. 插件缓存路径 → 读 plugin.json 判断
+  // 3. 软链目标在插件缓存内 → 按安装目录 manifest 判断（全局 skills 常见为链向 cache）
+  if (isSymlink && symlinkTarget) {
+    const viaTarget = classifyCachePath(symlinkTarget, paths, fs)
+    if (viaTarget) return viaTarget
+  }
+
+  // 4. 插件缓存路径 → 读 plugin.json 判断
   if (skillPath.includes(join('.claude', 'plugins', 'cache'))) {
     const cacheResult = classifyCachePath(skillPath, paths, fs)
     if (cacheResult) return cacheResult
   }
 
-  // 4. 全局 skills/ 目录 → 交叉比对插件注册表
+  // 5. 全局 skills/ 目录 → 目录名与 frontmatter.name 双键交叉比对插件注册表
   if (skillPath.startsWith(paths.globalSkillsDir)) {
-    const skillName = basename(skillPath)
-    const regEntry = pluginRegistry.get(skillName)
+    let regEntry = pluginRegistry.get(entryName)
+    if (!regEntry && fmName) regEntry = pluginRegistry.get(fmName)
     if (regEntry) return classifyByRegEntry(regEntry)
     return '自建'
   }
@@ -115,7 +127,10 @@ export function scanSkillsDir(dir, scope, pluginRegistry, paths, fs) {
 
     // 目录下的 skill
     if (stat.isDirectory() || isSymlink) {
-      const source = inferSource(fullPath, isSymlink, symlinkTarget, pluginRegistry, paths, fs)
+      const source = inferSource(fullPath, isSymlink, symlinkTarget, pluginRegistry, paths, fs, {
+        entryName: entry,
+        fmName: frontmatter.name || '',
+      })
       const skillName = frontmatter.name || entry
       const regEntry = pluginRegistry.get(skillName) || pluginRegistry.get(entry)
 

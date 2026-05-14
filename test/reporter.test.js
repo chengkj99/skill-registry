@@ -128,11 +128,13 @@ describe('generateJsonReport', () => {
 describe('generateTreeReport', () => {
   it('输出包含标题和技能名', () => {
     const skills = [
-      makeSkill({ name: 'my-skill', source: '自建', scope: '全局级' }),
+      makeSkill({ name: 'my-skill', source: '自建', scope: '全局级', plugin: 'my-plugin' }),
     ]
     const tree = generateTreeReport(skills, [], homeDir, projectRoot, { noColor: true })
     expect(tree).toContain('Skills 清单报告')
     expect(tree).toContain('my-skill')
+    expect(tree).toContain('全局级')
+    expect(tree).toContain('my-plugin')
   })
 
   it('按来源分组显示', () => {
