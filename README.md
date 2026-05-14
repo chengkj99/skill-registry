@@ -5,7 +5,7 @@ Scan, classify, and detect conflicts in your Claude Code skills — from CLI or 
 ## What It Does
 
 - **Scans** all installed skills from global `~/.claude/skills/`, project `.claude/skills/`, and plugin cache
-- **Classifies** each skill by source: 官方插件 / 社区插件 / 三方(agents) / 自建 / 项目 / 团队
+- **Classifies** each skill by source: 官方插件 / 社区插件 / 三方(agents) / 本地 / 项目 / 团队
 - **全局来源推断**：同时用 skill **目录名**与 `SKILL.md` frontmatter 中的 **`name`** 去匹配插件注册表；`~/.claude/skills/` 下指向 `~/.claude/plugins/cache/` 的软链会按对应安装目录的 `plugin.json` 判定官方或社区。
 - **Detects** naming conflicts and reports which skill takes priority
 - **Outputs** colored tree view (default), Markdown, or JSON；树形模式下每行附带灰色 **[作用域 · 插件名]** 提示（无插件则仅作用域）。
@@ -56,7 +56,7 @@ Skills 清单报告 (131 skills, 3 conflicts)
   ├── autopilot              Full autonomous execution...
   └── ...
 
-自建 ─────────────────────────────────── 25
+本地 ─────────────────────────────────── 25
   ├── content-creator        自动化内容创作工作流系统
   └── ...
 
@@ -65,7 +65,7 @@ Skills 清单报告 (131 skills, 3 conflicts)
   └── ...
 
 ⚠ Conflicts (3)
-  ● codebase-audit  项目 (active) ← 自建 (overridden)
+  ● codebase-audit  本地 (active) ← 社区(omc) (overridden)
   ● ...
 ```
 
@@ -129,7 +129,7 @@ const conflicts = detectConflicts(skills)
 | 官方插件 | Cyan | From official marketplaces (claude-plugins-official, omc, superpowers) |
 | 社区插件 | Blue | From community marketplaces |
 | 三方(agents) | Yellow | Symlinked from `~/.agents/skills/` |
-| 自建 | Green | Manually created, not from a plugin |
+| 本地 | Green | Plain installs under skills dirs, not matched to a known plugin (may include copies) |
 | 项目 | Magenta | In project `.claude/skills/` |
 | 团队 | White | In a team-shared skills directory |
 
@@ -138,7 +138,7 @@ const conflicts = detectConflicts(skills)
 When two skills share the same name:
 
 1. **Project scope** wins over global scope
-2. Within the same scope: 自建 > 官方插件 > 社区插件 > 三方 > 团队
+2. Within the same scope: 本地 > 官方插件 > 社区插件 > 三方 > 团队
 
 ## Zero Dependencies
 

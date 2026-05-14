@@ -7,7 +7,7 @@ export const OFFICIAL_AUTHOR = 'Anthropic'
 export const PLUGIN_MANIFEST_PATH = join('.claude-plugin', 'plugin.json')
 
 // 来源大类排序（社区子类如 社区(omc) 动态插入"官方"之后）
-export const SOURCE_ORDER = ['官方', '社区', '自建', '其他']
+export const SOURCE_ORDER = ['官方', '社区', '本地', '其他']
 
 // ANSI 颜色常量
 export const RESET = '\x1b[0m'
@@ -21,13 +21,13 @@ export const GRAY = '\x1b[90m'
 export const SOURCE_COLORS = {
   '官方': '\x1b[36m',     // 青色
   '社区': '\x1b[34m',     // 蓝色
-  '自建': '\x1b[32m',     // 绿色
+  '本地': '\x1b[32m',     // 绿色
   '其他': '\x1b[90m',     // 灰色
 }
 
 // 来源分类（用于冲突排序：索引越小优先级越高，社区子类共享"社区"优先级）
 export const SOURCE_PRIORITY = {
-  '自建': 0,
+  '本地': 0,
   '官方': 1,
   '社区': 2,
   '其他': 3,

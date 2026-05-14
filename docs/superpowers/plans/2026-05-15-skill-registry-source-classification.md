@@ -117,13 +117,13 @@ cd /Users/chengkangjian/work/skill-registry && npm test -- test/scanner.test.js
 1. 将 `inferSource` 增加第七参数 `lookup = {}`，从中读取 `entryName`（默认 `basename(skillPath)`）与 `fmName`（默认 `''`，并 `.trim()`）。
 2. 严格按设计规格 **第 6 节** 顺序实现：
    - 软链 + `symlinkTarget` 含 `.agents/skills` → `社区(agents)`（保持现有行为）。
-   - `skillPath.startsWith(paths.projectSkillsDir)` → `自建`。
+   - `skillPath.startsWith(paths.projectSkillsDir)` → `本地`。
    - **新增**：若 `isSymlink && symlinkTarget`，则 `const t = classifyCachePath(symlinkTarget, paths, fs)`，若 `t` 非空则返回 `t`。
    - `skillPath` 含 `join('.claude', 'plugins', 'cache')` 时沿用现有 `classifyCachePath(skillPath, ...)`。
-   - `skillPath.startsWith(paths.globalSkillsDir)`：`let reg = pluginRegistry.get(entryName)`；若缺失且 `fmName` 非空则 `reg = pluginRegistry.get(fmName)`；若 `reg` 存在则 `classifyByRegEntry(reg)`，否则 `自建`。
+   - `skillPath.startsWith(paths.globalSkillsDir)`：`let reg = pluginRegistry.get(entryName)`；若缺失且 `fmName` 非空则 `reg = pluginRegistry.get(fmName)`；若 `reg` 存在则 `classifyByRegEntry(reg)`，否则 `本地`。
 3. 其余路径 → `其他`（与当前文件末尾行为一致）。
 
-**不要**在「项目目录」分支之前执行软链 cache 分支（规格：项目路径仍为自建）。
+**不要**在「项目目录」分支之前执行软链 cache 分支（规格：项目路径仍为本地）。
 
 - [ ] **Step 3: 更新 `scanSkillsDir` 中的调用**
 

@@ -9,7 +9,7 @@ function makeSkill(overrides = {}) {
     name: 'test-skill',
     description: 'A test skill',
     version: '1.0.0',
-    source: '自建',
+    source: '本地',
     scope: '全局级',
     path: '/home/user/.claude/skills/test-skill',
     isSymlink: false,
@@ -24,7 +24,7 @@ function makeSkill(overrides = {}) {
 describe('generateMarkdownReport', () => {
   it('生成包含总览的 Markdown', () => {
     const skills = [
-      makeSkill({ name: 'a', source: '自建', scope: '全局级' }),
+      makeSkill({ name: 'a', source: '本地', scope: '全局级' }),
       makeSkill({ name: 'b', source: '社区(superpowers)', scope: '项目级', path: '/home/user/projects/demo/.claude/skills/b' }),
     ]
     const md = generateMarkdownReport(skills, [], homeDir, projectRoot)
@@ -40,7 +40,7 @@ describe('generateMarkdownReport', () => {
   })
 
   it('有冲突时显示冲突清单', () => {
-    const s1 = makeSkill({ name: 'dup', source: '自建', scope: '全局级' })
+    const s1 = makeSkill({ name: 'dup', source: '本地', scope: '全局级' })
     const s2 = makeSkill({ name: 'dup', source: '官方', scope: '全局级', path: '/home/user/.claude/skills/dup2' })
     const conflicts = [{
       name: 'dup',
@@ -51,7 +51,7 @@ describe('generateMarkdownReport', () => {
     const md = generateMarkdownReport([s1, s2], conflicts, homeDir, projectRoot)
     expect(md).toContain('## 冲突清单')
     expect(md).toContain('dup')
-    expect(md).toContain('自建')
+    expect(md).toContain('本地')
     expect(md).toContain('官方')
   })
 
@@ -83,7 +83,7 @@ describe('generateMarkdownReport', () => {
 describe('generateJsonReport', () => {
   it('生成正确的 JSON 结构', () => {
     const skills = [
-      makeSkill({ name: 'a', source: '自建', scope: '全局级' }),
+      makeSkill({ name: 'a', source: '本地', scope: '全局级' }),
       makeSkill({ name: 'b', source: '官方', scope: '项目级', path: '/home/user/projects/demo/.claude/skills/b' }),
     ]
     const result = generateJsonReport(skills, [], homeDir, projectRoot)
@@ -102,25 +102,25 @@ describe('generateJsonReport', () => {
 
   it('bySource 按预定义顺序输出', () => {
     const skills = [
-      makeSkill({ source: '自建', scope: '全局级' }),
+      makeSkill({ source: '本地', scope: '全局级' }),
       makeSkill({ source: '官方', scope: '全局级' }),
       makeSkill({ source: '社区(oh-my-claudecode)', scope: '全局级' }),
     ]
     const result = generateJsonReport(skills, [], homeDir, projectRoot)
     const sources = Object.keys(result.summary.bySource)
-    // 官方应排在社区前面，社区排在自建前面（按 SOURCE_ORDER 顺序）
+    // 官方应排在社区前面，社区排在本地前面（按 SOURCE_ORDER 顺序）
     expect(sources.indexOf('官方')).toBeLessThan(sources.indexOf('社区(oh-my-claudecode)'))
-    expect(sources.indexOf('社区(oh-my-claudecode)')).toBeLessThan(sources.indexOf('自建'))
+    expect(sources.indexOf('社区(oh-my-claudecode)')).toBeLessThan(sources.indexOf('本地'))
   })
 
   it('冲突信息正确映射', () => {
-    const s1 = makeSkill({ name: 'dup', source: '自建', scope: '全局级' })
+    const s1 = makeSkill({ name: 'dup', source: '本地', scope: '全局级' })
     const s2 = makeSkill({ name: 'dup', source: '官方', scope: '全局级', path: '/home/user/.claude/skills/dup2' })
     const conflicts = [{ name: 'dup', active: s1, overridden: [s2], locations: [s1, s2] }]
     const result = generateJsonReport([s1, s2], conflicts, homeDir, projectRoot)
     expect(result.conflicts).toHaveLength(1)
     expect(result.conflicts[0].name).toBe('dup')
-    expect(result.conflicts[0].active.source).toBe('自建')
+    expect(result.conflicts[0].active.source).toBe('本地')
     expect(result.conflicts[0].overridden).toHaveLength(1)
   })
 })
@@ -128,7 +128,7 @@ describe('generateJsonReport', () => {
 describe('generateTreeReport', () => {
   it('输出包含标题和技能名', () => {
     const skills = [
-      makeSkill({ name: 'my-skill', source: '自建', scope: '全局级', plugin: 'my-plugin' }),
+      makeSkill({ name: 'my-skill', source: '本地', scope: '全局级', plugin: 'my-plugin' }),
     ]
     const tree = generateTreeReport(skills, [], homeDir, projectRoot, { noColor: true })
     expect(tree).toContain('Skills 清单报告')
@@ -139,18 +139,18 @@ describe('generateTreeReport', () => {
 
   it('按来源分组显示', () => {
     const skills = [
-      makeSkill({ name: 'a', source: '自建', scope: '全局级' }),
+      makeSkill({ name: 'a', source: '本地', scope: '全局级' }),
       makeSkill({ name: 'b', source: '官方', scope: '全局级', path: '/home/user/projects/demo/.claude/skills/b' }),
     ]
     const tree = generateTreeReport(skills, [], homeDir, projectRoot, { noColor: true })
-    expect(tree).toContain('自建')
+    expect(tree).toContain('本地')
     expect(tree).toContain('官方')
   })
 
   it('使用树形连接符', () => {
     const skills = [
-      makeSkill({ name: 'a', source: '自建', scope: '全局级' }),
-      makeSkill({ name: 'b', source: '自建', scope: '全局级', path: '/home/user/.claude/skills/b' }),
+      makeSkill({ name: 'a', source: '本地', scope: '全局级' }),
+      makeSkill({ name: 'b', source: '本地', scope: '全局级', path: '/home/user/.claude/skills/b' }),
     ]
     const tree = generateTreeReport(skills, [], homeDir, projectRoot, { noColor: true })
     expect(tree).toContain('├──')
@@ -158,7 +158,7 @@ describe('generateTreeReport', () => {
   })
 
   it('冲突显示警告标记', () => {
-    const s1 = makeSkill({ name: 'dup', source: '自建', scope: '全局级' })
+    const s1 = makeSkill({ name: 'dup', source: '本地', scope: '全局级' })
     const s2 = makeSkill({ name: 'dup', source: '官方', scope: '全局级', path: '/home/user/.claude/skills/dup2' })
     const conflicts = [{ name: 'dup', active: s1, overridden: [s2], locations: [s1, s2] }]
     const tree = generateTreeReport([s1, s2], conflicts, homeDir, projectRoot, { noColor: true })

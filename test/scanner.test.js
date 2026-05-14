@@ -10,20 +10,20 @@ const paths = getPaths(homeDir, projectRoot)
 const noFs = createFakeFs({})
 
 describe('inferSource', () => {
-  it('项目目录下返回"自建"', () => {
+  it('项目目录下返回"本地"', () => {
     const result = inferSource(
       '/home/user/project/.claude/skills/my-skill',
       false, null, new Map(), paths, noFs
     )
-    expect(result).toBe('自建')
+    expect(result).toBe('本地')
   })
 
-  it('全局目录下无注册表匹配返回"自建"', () => {
+  it('全局目录下无注册表匹配返回"本地"', () => {
     const result = inferSource(
       '/home/user/.claude/skills/my-skill',
       false, null, new Map(), paths, noFs
     )
-    expect(result).toBe('自建')
+    expect(result).toBe('本地')
   })
 
   it('全局目录下有官方插件注册(isOfficial=true)返回"官方"', () => {
@@ -158,7 +158,7 @@ describe('scanSkillsDir', () => {
     expect(result[0].name).toBe('my-skill')
     expect(result[0].description).toBe('A test')
     expect(result[0].scope).toBe('全局级')
-    expect(result[0].source).toBe('自建')
+    expect(result[0].source).toBe('本地')
     expect(result[0].hasSkillMd).toBe(true)
   })
 

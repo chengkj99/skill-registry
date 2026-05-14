@@ -9,7 +9,7 @@ import { OFFICIAL_AUTHOR, PLUGIN_MANIFEST_PATH } from './constants.js'
 function classifyByRegEntry(regEntry) {
   if (regEntry?.isOfficial) return '官方'
   if (regEntry?.plugin) return `社区(${regEntry.plugin})`
-  return '自建'
+  return '本地'
 }
 
 /**
@@ -38,7 +38,7 @@ function classifyCachePath(skillPath, paths, fs) {
 }
 
 /**
- * 推断 skill 来源（4 类：官方 / 社区 / 自建 / 其他）
+ * 推断 skill 来源（4 类：官方 / 社区 / 本地 / 其他）
  * @param {object} [lookup] - 目录扫描侧提供的补充键（避免仅用 basename 漏匹配 registry）
  * @param {string} [lookup.entryName] - skills 目录下条目名（文件夹名），默认取 skillPath 的 basename
  * @param {string} [lookup.fmName] - SKILL.md frontmatter 中的 name，可选
@@ -50,8 +50,8 @@ export function inferSource(skillPath, isSymlink, symlinkTarget, pluginRegistry,
   // 1. 软链指向 .agents/skills → 社区(agents)
   if (isSymlink && symlinkTarget && symlinkTarget.includes('.agents/skills')) return '社区(agents)'
 
-  // 2. 项目目录下 → 自建
-  if (skillPath.startsWith(paths.projectSkillsDir)) return '自建'
+  // 2. 项目目录下 → 本地（目录内副本，未必为本人编写）
+  if (skillPath.startsWith(paths.projectSkillsDir)) return '本地'
 
   // 3. 软链目标在插件缓存内 → 按安装目录 manifest 判断（全局 skills 常见为链向 cache）
   if (isSymlink && symlinkTarget) {
@@ -70,7 +70,7 @@ export function inferSource(skillPath, isSymlink, symlinkTarget, pluginRegistry,
     let regEntry = pluginRegistry.get(entryName)
     if (!regEntry && fmName) regEntry = pluginRegistry.get(fmName)
     if (regEntry) return classifyByRegEntry(regEntry)
-    return '自建'
+    return '本地'
   }
 
   return '其他'

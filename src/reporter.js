@@ -99,7 +99,7 @@ export function generateMarkdownReport(skills, conflicts, homeDir, projectRoot) 
         md += `| ${c.name} | ${activeInfo} | ${ovInfo} |\n`
       }
     }
-    md += `\n> 作用域近的优先（项目级 > 全局级），同作用域内自建优先。\n`
+    md += `\n> 作用域近的优先（项目级 > 全局级），同作用域内本地来源优先。\n`
   } else {
     md += `## 冲突清单\n\n无冲突。\n`
   }
