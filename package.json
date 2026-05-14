@@ -16,9 +16,15 @@
     "skills"
   ],
   "scripts": {
+    "build": "npm run test",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "prepublishOnly": "npm run build",
+    "release:patch": "npm run build && npm version patch -m \"chore: release %s\"",
+    "release:minor": "npm run build && npm version minor -m \"chore: release %s\"",
+    "release:major": "npm run build && npm version major -m \"chore: release %s\"",
+    "release:publish": "npm publish"
   },
   "keywords": [
     "claude",
