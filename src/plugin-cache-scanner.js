@@ -1,6 +1,7 @@
 import { join } from 'node:path'
 import { parseFrontmatter } from './parser.js'
 import { OFFICIAL_AUTHOR, PLUGIN_MANIFEST_PATH } from './constants.js'
+import { compareSemverLikeDesc } from './version-compare.js'
 
 /**
  * 读取插件 manifest 中的 author.name 判断是否 Anthropic 官方
@@ -38,8 +39,17 @@ export function scanPluginCacheSkills(paths, pluginRegistry, fs) {
       const pluginPath = join(marketplacePath, pluginDir)
       if (!fs.lstatSync(pluginPath).isDirectory()) continue
 
-      // 找最新版本
-      const versions = fs.readdirSync(pluginPath).sort().reverse()
+      // 找最新版本（semver 风格比较，避免 "10.0.0" 字符串序小于 "9.0.0"）
+      const versions = fs
+        .readdirSync(pluginPath)
+        .filter((v) => {
+          try {
+            return fs.lstatSync(join(pluginPath, v)).isDirectory()
+          } catch {
+            return false
+          }
+        })
+        .sort(compareSemverLikeDesc)
       if (versions.length === 0) continue
       const latestVersionPath = join(pluginPath, versions[0])
 

@@ -1,11 +1,7 @@
-import { resolve, extname } from 'node:path'
+import { resolve } from 'node:path'
 import { homedir } from 'node:os'
 import * as nativeFs from 'node:fs'
-import { getPaths } from './constants.js'
-import { loadPluginRegistry } from './plugin-registry.js'
-import { scanSkillsDir } from './scanner.js'
-import { scanPluginCacheSkills } from './plugin-cache-scanner.js'
-import { detectConflicts } from './conflict-detector.js'
+import { scan } from './index.js'
 import { generateMarkdownReport, generateJsonReport, generateTreeReport } from './reporter.js'
 
 function printHelp() {
@@ -48,32 +44,12 @@ export function run(argv, options = {}) {
   }
 
   const projectRoot = opts.project || cwd
-  const paths = getPaths(home, projectRoot)
 
   try {
-    // 1. 加载插件注册表
-    const pluginRegistry = loadPluginRegistry(paths, fs)
+    // 与 programmatic API `scan()` 共用同一管线（先插件缓存填充 registry，再扫目录）
+    const { skills: allSkills, conflicts } = scan({ homeDir: home, projectRoot, fs })
 
-    const allSkills = []
-
-    // 2. 扫描全局 skills
-    const globalSkills = scanSkillsDir(paths.globalSkillsDir, '全局级', pluginRegistry, paths, fs)
-    allSkills.push(...globalSkills)
-
-    // 3. 扫描项目级 skills
-    const projectSkills = scanSkillsDir(paths.projectSkillsDir, '项目级', pluginRegistry, paths, fs)
-    allSkills.push(...projectSkills)
-
-    // 4. 扫描插件缓存中未被全局 skills/ 覆盖的 skill
-    const pluginCacheSkills = scanPluginCacheSkills(paths, pluginRegistry, fs)
-    const existingNames = new Set(allSkills.map(s => s.name.toLowerCase()))
-    const newPluginSkills = pluginCacheSkills.filter(s => !existingNames.has(s.name.toLowerCase()))
-    allSkills.push(...newPluginSkills)
-
-    // 5. 检测冲突
-    const conflicts = detectConflicts(allSkills)
-
-    // 6. 输出 — 优先级: --json > --md > --tree(默认)
+    // 2. 输出 — 优先级: --json > --md > --tree(默认)
     if (opts.json) {
       const result = generateJsonReport(allSkills, conflicts, home, projectRoot)
       const json = JSON.stringify(result, null, 2)

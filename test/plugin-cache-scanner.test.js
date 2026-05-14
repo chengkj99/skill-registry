@@ -74,6 +74,28 @@ describe('scanPluginCacheSkills', () => {
     expect(result[0].version).toBe('2.0.0')
   })
 
+  it('10.0.0 与 9.0.0 并存时选 10.0.0（非字典序）', () => {
+    const v9 = '/home/user/.claude/plugins/cache/omc/semver-test/9.0.0/skills'
+    const v10 = '/home/user/.claude/plugins/cache/omc/semver-test/10.0.0/skills'
+    const fs = createFakeFs({
+      '/home/user/.claude/plugins/cache/omc': null,
+      '/home/user/.claude/plugins/cache/omc/semver-test': null,
+      '/home/user/.claude/plugins/cache/omc/semver-test/9.0.0': null,
+      '/home/user/.claude/plugins/cache/omc/semver-test/10.0.0': null,
+      '/home/user/.claude/plugins/cache/omc/semver-test/10.0.0/.claude-plugin/plugin.json':
+        JSON.stringify({ name: 'semver-test', author: { name: 'Community' } }),
+      [v9]: null,
+      [v10]: null,
+      [`${v10}/x`]: null,
+      [`${v10}/x/SKILL.md`]: '---\nname: x\n---',
+    })
+    const registry = new Map()
+    const result = scanPluginCacheSkills(paths, registry, fs)
+    expect(result).toHaveLength(1)
+    expect(result[0].path).toContain('10.0.0')
+    expect(result[0].version).toBe('10.0.0')
+  })
+
   it('扫描 agents/ 目录（OMC 格式）', () => {
     const agentPath = '/home/user/.claude/plugins/cache/omc/omc-plugin/4.11.5/agents/autopilot'
     const fs = createFakeFs({
