@@ -4,6 +4,30 @@ import { OFFICIAL_AUTHOR, PLUGIN_MANIFEST_PATH } from './constants.js'
 import { compareSemverLikeDesc } from './version-compare.js'
 
 /**
+ * 判断路径是否为「可进入的版本目录」。
+ * 真实 fs 优先用 stat（跟随指向目录的符号链接）；测试用 fake 无 statSync 时回退 lstat + realpath。
+ */
+function isVersionDirectory(fs, fullPath) {
+  try {
+    if (typeof fs.statSync === 'function') {
+      return fs.statSync(fullPath).isDirectory()
+    }
+  } catch {
+    // stat 失败时继续尝试 lstat（如部分 mock）
+  }
+  try {
+    const st = fs.lstatSync(fullPath)
+    if (st.isSymbolicLink()) {
+      const resolved = fs.realpathSync(fullPath)
+      return fs.lstatSync(resolved).isDirectory()
+    }
+    return st.isDirectory()
+  } catch {
+    return false
+  }
+}
+
+/**
  * 读取插件 manifest 中的 author.name 判断是否 Anthropic 官方
  */
 function isOfficialPlugin(installPath, fs) {
@@ -42,13 +66,7 @@ export function scanPluginCacheSkills(paths, pluginRegistry, fs) {
       // 找最新版本（semver 风格比较，避免 "10.0.0" 字符串序小于 "9.0.0"）
       const versions = fs
         .readdirSync(pluginPath)
-        .filter((v) => {
-          try {
-            return fs.lstatSync(join(pluginPath, v)).isDirectory()
-          } catch {
-            return false
-          }
-        })
+        .filter((v) => isVersionDirectory(fs, join(pluginPath, v)))
         .sort(compareSemverLikeDesc)
       if (versions.length === 0) continue
       const latestVersionPath = join(pluginPath, versions[0])
