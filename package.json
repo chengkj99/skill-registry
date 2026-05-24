@@ -1,7 +1,7 @@
 {
   "name": "skill-registry",
-  "version": "1.0.4",
-  "description": "Scan, classify, and report on Claude Code skills — CLI and programmatic API",
+  "version": "1.1.0",
+  "description": "Scan, classify, and report on Claude Code & Cursor skills with usage analytics — CLI and programmatic API",
   "type": "module",
   "main": "./src/index.js",
   "exports": {

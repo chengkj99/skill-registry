@@ -16,6 +16,9 @@ export const DIM = '\x1b[2m'
 export const RED = '\x1b[31m'
 export const YELLOW = '\x1b[33m'
 export const GRAY = '\x1b[90m'
+export const CYAN = '\x1b[36m'
+export const GREEN = '\x1b[32m'
+export const MAGENTA = '\x1b[35m'
 
 // 来源对应的 ANSI 颜色（社区子类继承"社区"颜色）
 export const SOURCE_COLORS = {
@@ -46,5 +49,7 @@ export function getPaths(homeDir, projectRoot) {
     pluginsDir: join(homeDir, '.claude', 'plugins'),
     installedPluginsJson: join(homeDir, '.claude', 'plugins', 'installed_plugins.json'),
     pluginCacheDir: join(homeDir, '.claude', 'plugins', 'cache'),
+    projectsDir: join(homeDir, '.claude', 'projects'),
+    cursorProjectsDir: join(homeDir, '.cursor', 'projects'),
   }
 }

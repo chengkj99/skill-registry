@@ -8,6 +8,9 @@ function makeSkill(overrides = {}) {
   return {
     name: 'test-skill',
     description: 'A test skill',
+    descriptionZh: '测试技能',
+    category: '通用工具',
+    descriptionLang: 'en',
     version: '1.0.0',
     source: '本地',
     scope: '全局级',
@@ -17,6 +20,8 @@ function makeSkill(overrides = {}) {
     hasSkillMd: true,
     marketplace: null,
     plugin: null,
+    usage: { count: 0, sessions: 0, lastUsed: null, lastUsedLabel: '从未调用', heat: 0, heatStars: '☆☆☆☆☆' },
+    status: 'idle',
     ...overrides,
   }
 }
@@ -27,8 +32,8 @@ describe('generateMarkdownReport', () => {
       makeSkill({ name: 'a', source: '本地', scope: '全局级' }),
       makeSkill({ name: 'b', source: '社区(superpowers)', scope: '项目级', path: '/home/user/projects/demo/.claude/skills/b' }),
     ]
-    const md = generateMarkdownReport(skills, [], homeDir, projectRoot)
-    expect(md).toContain('# Skills 清单报告')
+    const md = generateMarkdownReport(skills, [], homeDir, projectRoot, { enrichedSkills: skills })
+    expect(md).toContain('# Skills 健康报告')
     expect(md).toContain('共发现 | 2 个 skill')
     expect(md).toContain('全局级 | 1 个')
     expect(md).toContain('项目级 | 1 个')
@@ -49,7 +54,7 @@ describe('generateMarkdownReport', () => {
       locations: [s1, s2],
     }]
     const md = generateMarkdownReport([s1, s2], conflicts, homeDir, projectRoot)
-    expect(md).toContain('## 冲突清单')
+    expect(md).toContain('## ⚠️ 冲突清单')
     expect(md).toContain('dup')
     expect(md).toContain('本地')
     expect(md).toContain('官方')
@@ -57,10 +62,9 @@ describe('generateMarkdownReport', () => {
 
   it('长描述被截断', () => {
     const longDesc = 'A'.repeat(50)
-    const skills = [makeSkill({ description: longDesc })]
-    const md = generateMarkdownReport(skills, [], homeDir, projectRoot)
-    // 完整清单中描述截断到 35 字符
-    expect(md).toContain('A'.repeat(32) + '...')
+    const skills = [makeSkill({ description: longDesc, descriptionZh: 'A'.repeat(50) })]
+    const md = generateMarkdownReport(skills, [], homeDir, projectRoot, { enrichedSkills: skills })
+    expect(md).toContain('A'.repeat(33) + '...')
   })
 
   it('软链技能显示软链追踪', () => {
@@ -68,13 +72,13 @@ describe('generateMarkdownReport', () => {
       isSymlink: true,
       symlinkTarget: '/home/user/.agents/skills/test-skill',
     })]
-    const md = generateMarkdownReport(skills, [], homeDir, projectRoot)
+    const md = generateMarkdownReport(skills, [], homeDir, projectRoot, { enrichedSkills: skills })
     expect(md).toContain('## 软链追踪')
   })
 
   it('路径相对于 homeDir 显示', () => {
     const skills = [makeSkill({ path: '/home/user/.claude/skills/test-skill' })]
-    const md = generateMarkdownReport(skills, [], homeDir, projectRoot)
+    const md = generateMarkdownReport(skills, [], homeDir, projectRoot, { enrichedSkills: skills })
     expect(md).toContain('.claude/skills/test-skill')
     expect(md).not.toContain('/home/user/.claude/skills/test-skill')
   })
@@ -86,12 +90,14 @@ describe('generateJsonReport', () => {
       makeSkill({ name: 'a', source: '本地', scope: '全局级' }),
       makeSkill({ name: 'b', source: '官方', scope: '项目级', path: '/home/user/projects/demo/.claude/skills/b' }),
     ]
-    const result = generateJsonReport(skills, [], homeDir, projectRoot)
+    const result = generateJsonReport(skills, [], homeDir, projectRoot, { enrichedSkills: skills })
     expect(result.projectRoot).toBe(projectRoot)
     expect(result.summary.total).toBe(2)
     expect(result.summary.global).toBe(1)
     expect(result.summary.project).toBe(1)
+    expect(result.summary.active).toBe(0)
     expect(result.skills).toHaveLength(2)
+    expect(result.insights).toBeDefined()
   })
 
   it('路径相对于 homeDir', () => {
@@ -126,15 +132,23 @@ describe('generateJsonReport', () => {
 })
 
 describe('generateTreeReport', () => {
-  it('输出包含标题和技能名', () => {
+  it('输出包含仪表盘标题和技能名', () => {
     const skills = [
       makeSkill({ name: 'my-skill', source: '本地', scope: '全局级', plugin: 'my-plugin' }),
     ]
-    const tree = generateTreeReport(skills, [], homeDir, projectRoot, { noColor: true })
-    expect(tree).toContain('Skills 清单报告')
-    expect(tree).toContain('my-skill')
-    expect(tree).toContain('全局级')
+    const tree = generateTreeReport(skills, [], homeDir, projectRoot, { enrichedSkills: skills, noColor: true })
+    expect(tree).toContain('Skills 健康仪表盘')
+    expect(tree).toContain('[全局级]')
     expect(tree).toContain('my-plugin')
+  })
+
+  it('热门技能区块', () => {
+    const skills = [
+      makeSkill({ name: 'hot-skill', usage: { count: 10, sessions: 3, lastUsedLabel: '1 天前', heat: 5, heatStars: '★★★★★' } }),
+    ]
+    const tree = generateTreeReport(skills, [], homeDir, projectRoot, { enrichedSkills: skills, noColor: true })
+    expect(tree).toContain('🔥 热门技能')
+    expect(tree).toContain('10次')
   })
 
   it('按来源分组显示', () => {
@@ -142,7 +156,7 @@ describe('generateTreeReport', () => {
       makeSkill({ name: 'a', source: '本地', scope: '全局级' }),
       makeSkill({ name: 'b', source: '官方', scope: '全局级', path: '/home/user/projects/demo/.claude/skills/b' }),
     ]
-    const tree = generateTreeReport(skills, [], homeDir, projectRoot, { noColor: true })
+    const tree = generateTreeReport(skills, [], homeDir, projectRoot, { enrichedSkills: skills, noColor: true })
     expect(tree).toContain('本地')
     expect(tree).toContain('官方')
   })
@@ -152,7 +166,7 @@ describe('generateTreeReport', () => {
       makeSkill({ name: 'a', source: '本地', scope: '全局级' }),
       makeSkill({ name: 'b', source: '本地', scope: '全局级', path: '/home/user/.claude/skills/b' }),
     ]
-    const tree = generateTreeReport(skills, [], homeDir, projectRoot, { noColor: true })
+    const tree = generateTreeReport(skills, [], homeDir, projectRoot, { enrichedSkills: skills, noColor: true })
     expect(tree).toContain('├──')
     expect(tree).toContain('└──')
   })
@@ -162,13 +176,13 @@ describe('generateTreeReport', () => {
     const s2 = makeSkill({ name: 'dup', source: '官方', scope: '全局级', path: '/home/user/.claude/skills/dup2' })
     const conflicts = [{ name: 'dup', active: s1, overridden: [s2], locations: [s1, s2] }]
     const tree = generateTreeReport([s1, s2], conflicts, homeDir, projectRoot, { noColor: true })
-    expect(tree).toContain('Conflicts')
+    expect(tree).toContain('冲突')
     expect(tree).toContain('dup')
   })
 
   it('noColor 模式无 ANSI 码', () => {
     const skills = [makeSkill()]
-    const tree = generateTreeReport(skills, [], homeDir, projectRoot, { noColor: true })
+    const tree = generateTreeReport(skills, [], homeDir, projectRoot, { enrichedSkills: skills, noColor: true })
     expect(tree).not.toMatch(/\x1b\[/)
   })
 

@@ -54,7 +54,7 @@ describe('run', () => {
     const code = run([], { cwd: projectRoot, homedir: homeDir, fs, console: fakeConsole })
     expect(code).toBe(0)
     const result = output.join('\n')
-    expect(result).toContain('Skills 清单报告')
+    expect(result).toContain('Skills 健康仪表盘')
     expect(result).toContain('global-skill')
     expect(result).toContain('project-skill')
     expect(result).toContain('└──')
@@ -65,7 +65,7 @@ describe('run', () => {
     const code = run(['--md'], { cwd: projectRoot, homedir: homeDir, fs, console: fakeConsole })
     expect(code).toBe(0)
     const result = output.join('\n')
-    expect(result).toContain('# Skills 清单报告')
+    expect(result).toContain('# Skills 健康报告')
     expect(result).toContain('global-skill')
   })
 
