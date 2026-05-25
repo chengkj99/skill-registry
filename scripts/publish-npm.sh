@@ -35,6 +35,11 @@ if [[ "${TFA}" == "disabled" ]]; then
   echo ""
 fi
 
+if [[ "${TFA}" == "disabled" && -z "${NPM_TOKEN:-}" ]]; then
+  echo "错误: 2FA 未开启且未设置 NPM_TOKEN（需 Granular Token + Bypass 2FA）"
+  exit 1
+fi
+
 if [[ -n "${NPM_TOKEN:-}" ]]; then
   export NODE_AUTH_TOKEN="$NPM_TOKEN"
   echo "使用环境变量 NPM_TOKEN 发布"
