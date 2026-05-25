@@ -1,0 +1,34 @@
+# 通过 npm Trusted Publisher（OIDC）发布，无需在仓库里存 NPM_TOKEN。
+# 首次使用前请在 npm 配置：
+# https://www.npmjs.com/package/skill-registry/settings
+# → Trusted Publisher → GitHub Actions
+#   Repository: chengkj99/skill-registry
+#   Workflow: publish.yml
+#   Environment: (留空)
+
+name: Publish to npm
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm ci
+      - run: npm test
+      - run: npm publish --provenance --access public
